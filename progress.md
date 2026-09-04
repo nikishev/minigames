@@ -14,6 +14,7 @@ Original prompt: connect to git and lets build some mini games so people can pla
 - Added a copyright-safe roadmap for Cursor Cat (Neko-style) and Desktop Lamb, plus five additional original mini-game concepts.
 - Added Neco as the fourth game: original vector cat, pointer chasing, pats, affection scoring, synthesized purr cues, and a 30-second round.
 - Verified Neco on the production preview: pointer following and pat scoring produce the expected state (`score: 50`, `pats: 1`) and the screenshot shows the complete cat/room scene with no console errors.
+- Reworked Neco after review: removed the timer/chase-score framing and replaced it with a persistent Tamagotchi-style care loop (hunger, energy, happiness, cleanliness, bond, day), visible Feed/Play/Nap actions, and stateful feedback messages.
 
 ## TODO
 

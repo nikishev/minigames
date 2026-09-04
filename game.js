@@ -8,6 +8,7 @@ import Phaser from "phaser";
   const startButton = document.querySelector("#start-btn");
   const soundButton = document.querySelector("#sound-btn");
   const fullscreenButton = document.querySelector("#fullscreen-btn");
+  const petActions = document.querySelector("#pet-actions");
   const instructions = document.querySelector("#instructions");
   const tabs = [...document.querySelectorAll(".game-tab")];
   const W = canvas.width;
@@ -36,7 +37,7 @@ import Phaser from "phaser";
     neco: {
       title: "Neco",
       button: "Play Neco",
-      instruction: "Move your pointer around the room. Neco follows, and a tap gives a little pat.",
+      instruction: "Feed, play with, and nap your pet. Move your pointer near Neco and tap to give a pat.",
       accent: "#bd93f9",
     },
   };
@@ -141,6 +142,7 @@ import Phaser from "phaser";
     tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.game === name));
     startButton.textContent = config[name].button;
     instructions.textContent = config[name].instruction;
+    petActions.hidden = name !== "neco" || game.mode !== "playing";
     if (updateUrl && location.hash !== `#${name}`) history.replaceState(null, "", `#${name}`);
     render();
   }
@@ -502,17 +504,89 @@ import Phaser from "phaser";
     game.mode = "playing";
     game.score = 0;
     game.seed = 22061989;
+    const savedPet = loadNeco();
     game.data = {
       elapsed: 0,
-      remaining: 30,
       pet: { x: W / 2, y: H * 0.57, r: 30, facing: 1, tail: 0, blink: 0, blinkTimer: 2.4 },
-      affection: 0,
+      hunger: savedPet.hunger,
+      energy: savedPet.energy,
+      happiness: savedPet.happiness,
+      cleanliness: savedPet.cleanliness,
+      bond: savedPet.bond,
+      day: savedPet.day,
       pats: 0,
       lastPat: -2,
+      actionMessage: "Neco is waiting for you.",
       particles: [],
     };
     game.pointer = { x: W / 2, y: H * 0.42 };
+    petActions.hidden = false;
     beep(520, 0.08, "triangle");
+  }
+
+  function loadNeco() {
+    const defaults = { hunger: 72, energy: 82, happiness: 68, cleanliness: 88, bond: 0, day: 1 };
+    try {
+      const saved = JSON.parse(localStorage.getItem("pocket-arcade-neco"));
+      return saved ? { ...defaults, ...saved } : defaults;
+    } catch {
+      return defaults;
+    }
+  }
+
+  function clampNeed(value) {
+    return Math.max(0, Math.min(100, value));
+  }
+
+  function saveNeco(d) {
+    localStorage.setItem("pocket-arcade-neco", JSON.stringify({
+      hunger: Math.round(d.hunger * 10) / 10,
+      energy: Math.round(d.energy * 10) / 10,
+      happiness: Math.round(d.happiness * 10) / 10,
+      cleanliness: Math.round(d.cleanliness * 10) / 10,
+      bond: d.bond,
+      day: d.day,
+    }));
+  }
+
+  function careFor(action) {
+    if (game.selected !== "neco") return;
+    if (game.mode === "preview" || game.mode === "won" || game.mode === "lost") {
+      startNeco();
+      startButton.textContent = "Restart";
+    }
+    if (game.mode !== "playing") return;
+    const d = game.data;
+    if (action === "feed") {
+      d.hunger = clampNeed(d.hunger + 24);
+      d.happiness = clampNeed(d.happiness + 5);
+      d.cleanliness = clampNeed(d.cleanliness - 2);
+      d.actionMessage = "Munch munch. Neco is full!";
+      beep(620, 0.08, "sine");
+    }
+    if (action === "play") {
+      if (d.energy < 12) {
+        d.actionMessage = "Neco is sleepy. Let them nap first.";
+        beep(180, 0.08, "triangle");
+        return;
+      }
+      d.energy = clampNeed(d.energy - 14);
+      d.hunger = clampNeed(d.hunger - 8);
+      d.happiness = clampNeed(d.happiness + 22);
+      d.bond += 1;
+      game.score += 100;
+      d.actionMessage = "Zoomies! Neco had a great time.";
+      burst(d.pet.x, d.pet.y - 38, "#ffd166");
+      beep(780, 0.1, "triangle");
+    }
+    if (action === "nap") {
+      d.energy = clampNeed(d.energy + 34);
+      d.happiness = clampNeed(d.happiness + 3);
+      d.cleanliness = clampNeed(d.cleanliness - 3);
+      d.actionMessage = "Shhh… Neco is having a tiny nap.";
+      beep(300, 0.16, "sine");
+    }
+    saveNeco(d);
   }
 
   function necoAction() {
@@ -528,7 +602,10 @@ import Phaser from "phaser";
       d.lastPat = d.elapsed;
       d.pats++;
       game.score += 50;
-      d.affection = Math.min(100, d.affection + 4);
+      d.bond += 1;
+      d.happiness = clampNeed(d.happiness + 4);
+      d.actionMessage = "Prrr… Neco likes that.";
+      saveNeco(d);
       burst(d.pet.x, d.pet.y - 32, "#bd93f9");
       beep(560 + d.pats * 12, 0.07, "sine", 0.045);
     }
@@ -537,7 +614,17 @@ import Phaser from "phaser";
   function updateNeco(dt) {
     const d = game.data;
     d.elapsed += dt;
-    d.remaining = Math.max(0, 30 - d.elapsed);
+    if (!d.decayTimer) d.decayTimer = 0;
+    d.decayTimer += dt;
+    if (d.decayTimer >= 4) {
+      d.decayTimer = 0;
+      d.hunger = clampNeed(d.hunger - 0.8);
+      d.energy = clampNeed(d.energy - 0.25);
+      d.happiness = clampNeed(d.happiness - 0.35);
+      d.cleanliness = clampNeed(d.cleanliness - 0.18);
+      d.day = 1 + Math.floor(d.elapsed / 90);
+      saveNeco(d);
+    }
     const p = d.pet;
     const dx = game.pointer.x - p.x;
     const dy = game.pointer.y - p.y;
@@ -561,12 +648,6 @@ import Phaser from "phaser";
       particle.life -= dt;
     }
     d.particles = d.particles.filter((particle) => particle.life > 0);
-    if (d.remaining <= 0) {
-      game.mode = "won";
-      d.isBest = saveBest("neco", game.score);
-      startButton.textContent = "Play again";
-      beep(820, 0.16, "sine", 0.06);
-    }
   }
 
   function drawCat(pet) {
@@ -618,7 +699,7 @@ import Phaser from "phaser";
   function drawNeco() {
     drawBackdrop("189, 147, 249");
     const d = game.data;
-    drawTopBar("Neco", "Affection", game.score, "Time", `${Math.ceil(d.remaining)}s`, "#bd93f9");
+    drawTopBar("Neco", "Bond", d.bond, "Day", d.day, "#bd93f9");
     roundRect(82, 122, W - 164, H - 192, 30, "rgba(14, 31, 50, 0.58)", "rgba(255,255,255,0.1)");
     ctx.fillStyle = "rgba(189,147,249,0.09)";
     ctx.fillRect(82, 380, W - 164, 150);
@@ -633,6 +714,14 @@ import Phaser from "phaser";
     ctx.beginPath(); ctx.arc(814, 480, 10, 0, TAU); ctx.fill();
     ctx.strokeStyle = "#59e1c0"; ctx.lineWidth = 5;
     ctx.beginPath(); ctx.moveTo(775, 475); ctx.lineTo(775, 428); ctx.moveTo(775, 445); ctx.lineTo(756, 426); ctx.moveTo(775, 451); ctx.lineTo(795, 430); ctx.stroke();
+    const stats = [["HUNGER", d.hunger, "#ff9f43"], ["ENERGY", d.energy, "#4cc9f0"], ["HAPPY", d.happiness, "#ffd166"], ["CLEAN", d.cleanliness, "#59e1c0"]];
+    stats.forEach(([label, value, color], index) => {
+      const x = 112 + index * 188;
+      text(label, x, 151, 9, "#7890aa", "left", 850);
+      roundRect(x, 163, 145, 9, 5, "rgba(255,255,255,0.09)");
+      roundRect(x, 163, 145 * value / 100, 9, 5, color);
+      text(`${Math.round(value)}`, x + 153, 168, 10, color, "left", 850);
+    });
     const target = game.pointer;
     ctx.strokeStyle = "rgba(189,147,249,0.72)"; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.arc(target.x, target.y, 18 + Math.sin(d.elapsed * 4) * 3, 0, TAU); ctx.stroke();
@@ -644,7 +733,7 @@ import Phaser from "phaser";
     }
     ctx.globalAlpha = 1;
     drawCat(d.pet);
-    text(d.pats ? `${d.pats} pats` : "wander your pointer to wake Neco", W / 2, 558, 13, "#7890aa", "center", 650);
+    text(d.actionMessage, W / 2, 558, 13, "#7890aa", "center", 650);
   }
 
   function drawReaction() {
@@ -776,6 +865,7 @@ import Phaser from "phaser";
 
   tabs.forEach((tab) => tab.addEventListener("click", () => selectGame(tab.dataset.game)));
   startButton.addEventListener("click", startSelected);
+  petActions.querySelectorAll("[data-care]").forEach((button) => button.addEventListener("click", () => careFor(button.dataset.care)));
   fullscreenButton.addEventListener("click", toggleFullscreen);
   soundButton.addEventListener("click", () => {
     game.muted = !game.muted;
@@ -808,7 +898,7 @@ import Phaser from "phaser";
     }
     if (game.selected === "neco") {
       const d = game.data;
-      return JSON.stringify({ ...base, pet: { x: Math.round(d.pet.x), y: Math.round(d.pet.y), radius: d.pet.r, facing: d.pet.facing }, pointer: { x: Math.round(game.pointer.x), y: Math.round(game.pointer.y) }, affection: d.affection, pats: d.pats, timeRemaining: Number(d.remaining.toFixed(1)) });
+      return JSON.stringify({ ...base, pet: { x: Math.round(d.pet.x), y: Math.round(d.pet.y), radius: d.pet.r, facing: d.pet.facing }, pointer: { x: Math.round(game.pointer.x), y: Math.round(game.pointer.y) }, needs: { hunger: Math.round(d.hunger), energy: Math.round(d.energy), happiness: Math.round(d.happiness), cleanliness: Math.round(d.cleanliness) }, bond: d.bond, day: d.day, pats: d.pats, message: d.actionMessage });
     }
     const d = game.data;
     return JSON.stringify({ ...base, phase: d.phase, prompt: d.message, reactionMs: d.reaction });

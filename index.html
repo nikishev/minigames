@@ -39,7 +39,7 @@
         </button>
         <button class="game-tab" type="button" data-game="neco">
           <span class="tab-icon violet">◒</span>
-          <span><strong>Neco</strong><small>Chase the cursor</small></span>
+          <span><strong>Neco</strong><small>Care for a pet</small></span>
         </button>
       </nav>
 
@@ -49,6 +49,11 @@
         </div>
         <div class="game-footer">
           <div id="instructions" class="instructions">Move with WASD / arrows or drag. Collect stars and dodge meteors.</div>
+          <div id="pet-actions" class="pet-actions" hidden aria-label="Neco care actions">
+            <button id="feed-btn" type="button" data-care="feed">Feed</button>
+            <button id="play-btn" type="button" data-care="play">Play</button>
+            <button id="nap-btn" type="button" data-care="nap">Nap</button>
+          </div>
           <div class="footer-actions">
             <button id="sound-btn" class="icon-btn" type="button" aria-label="Mute sound" title="Mute sound">♪</button>
             <button id="fullscreen-btn" class="icon-btn" type="button" aria-label="Toggle fullscreen" title="Fullscreen (F)">⛶</button>
