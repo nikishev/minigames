@@ -1,3 +1,5 @@
+import Phaser from "phaser";
+
 (() => {
   "use strict";
 
@@ -47,7 +49,6 @@
   };
 
   let audioContext = null;
-  let lastTime = performance.now();
 
   function loadScores() {
     try {
@@ -567,14 +568,6 @@
     }
   }
 
-  function frame(now) {
-    const dt = Math.min(0.035, (now - lastTime) / 1000);
-    lastTime = now;
-    update(dt);
-    render();
-    requestAnimationFrame(frame);
-  }
-
   function canvasPoint(event) {
     const rect = canvas.getBoundingClientRect();
     return { x: (event.clientX - rect.left) * W / rect.width, y: (event.clientY - rect.top) * H / rect.height };
@@ -657,6 +650,42 @@
   };
 
   const initialGame = config[location.hash.slice(1)] ? location.hash.slice(1) : "dodge";
+  class PocketArcadeScene extends Phaser.Scene {
+    constructor() {
+      super("PocketArcade");
+    }
+
+    create() {
+      this.game.events.on(Phaser.Core.Events.POST_RENDER, render);
+      this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+        this.game.events.off(Phaser.Core.Events.POST_RENDER, render);
+      });
+    }
+
+    update(_time, delta) {
+      update(Math.min(0.035, delta / 1000));
+    }
+  }
+
   selectGame(initialGame, false);
-  requestAnimationFrame(frame);
+
+  const engine = new Phaser.Game({
+    type: Phaser.CANVAS,
+    canvas,
+    width: W,
+    height: H,
+    backgroundColor: "#091525",
+    render: {
+      antialias: true,
+      clearBeforeRender: false,
+      roundPixels: false,
+    },
+    fps: {
+      target: 60,
+      forceSetTimeOut: false,
+    },
+    scene: PocketArcadeScene,
+  });
+
+  window.pocketArcadeEngine = engine;
 })();

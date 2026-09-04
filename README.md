@@ -1,6 +1,6 @@
 # Pocket Arcade
 
-Three lightweight browser games in one responsive, dependency-free site:
+Three lightweight browser games in one responsive site powered by Phaser 4:
 
 - **Star Sprint** — collect stars, dodge meteors, and survive for 35 seconds.
 - **Flip Match** — match six pairs with the fewest moves.
@@ -9,7 +9,8 @@ Three lightweight browser games in one responsive, dependency-free site:
 ## Run locally
 
 ```bash
-python3 -m http.server 5173
+npm install
+npm run dev
 ```
 
 Then open <http://localhost:5173>.
@@ -27,6 +28,6 @@ Scores are saved locally in the browser. The site is static and can be hosted di
 
 ## Rights and licensing
 
-This project contains only original, dependency-free code and generated canvas graphics. It does not include ROMs, emulators, commercial game assets, third-party fonts, or copied audio. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for the content manifest.
+This project contains only original game code and generated canvas graphics. It does not include ROMs, commercial game assets, third-party fonts, or copied audio. Phaser is used under its permissive MIT license. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for the complete content and dependency manifest.
 
 Released under the [CC0-1.0 public-domain dedication](LICENSE).
