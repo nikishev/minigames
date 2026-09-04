@@ -33,6 +33,12 @@ import Phaser from "phaser";
       instruction: "Wait for green, then tap the game or press Space. Don’t jump the gun.",
       accent: "#ffd166",
     },
+    neco: {
+      title: "Neco",
+      button: "Play Neco",
+      instruction: "Move your pointer around the room. Neco follows, and a tap gives a little pat.",
+      accent: "#bd93f9",
+    },
   };
 
   const game = {
@@ -143,6 +149,7 @@ import Phaser from "phaser";
     if (game.selected === "dodge") startDodge();
     if (game.selected === "memory") startMemory();
     if (game.selected === "reaction") startReaction();
+    if (game.selected === "neco") startNeco();
     startButton.textContent = "Restart";
   }
 
@@ -491,6 +498,155 @@ import Phaser from "phaser";
     }
   }
 
+  function startNeco() {
+    game.mode = "playing";
+    game.score = 0;
+    game.seed = 22061989;
+    game.data = {
+      elapsed: 0,
+      remaining: 30,
+      pet: { x: W / 2, y: H * 0.57, r: 30, facing: 1, tail: 0, blink: 0, blinkTimer: 2.4 },
+      affection: 0,
+      pats: 0,
+      lastPat: -2,
+      particles: [],
+    };
+    game.pointer = { x: W / 2, y: H * 0.42 };
+    beep(520, 0.08, "triangle");
+  }
+
+  function necoAction() {
+    if (game.selected !== "neco") return;
+    if (game.mode === "preview" || game.mode === "won" || game.mode === "lost") {
+      startNeco();
+      startButton.textContent = "Restart";
+      return;
+    }
+    const d = game.data;
+    const distance = Math.hypot(d.pet.x - game.pointer.x, d.pet.y - game.pointer.y);
+    if (distance < 76 && d.elapsed - d.lastPat > 0.2) {
+      d.lastPat = d.elapsed;
+      d.pats++;
+      game.score += 50;
+      d.affection = Math.min(100, d.affection + 4);
+      burst(d.pet.x, d.pet.y - 32, "#bd93f9");
+      beep(560 + d.pats * 12, 0.07, "sine", 0.045);
+    }
+  }
+
+  function updateNeco(dt) {
+    const d = game.data;
+    d.elapsed += dt;
+    d.remaining = Math.max(0, 30 - d.elapsed);
+    const p = d.pet;
+    const dx = game.pointer.x - p.x;
+    const dy = game.pointer.y - p.y;
+    const distance = Math.hypot(dx, dy);
+    const follow = Math.min(1, dt * (distance > 160 ? 3.4 : 2.1));
+    p.x += dx * follow;
+    p.y += dy * follow;
+    p.x = Math.max(48, Math.min(W - 48, p.x));
+    p.y = Math.max(136, Math.min(H - 76, p.y));
+    if (Math.abs(dx) > 2) p.facing = dx < 0 ? -1 : 1;
+    p.tail += dt * (distance > 80 ? 5.5 : 2.6);
+    p.blinkTimer -= dt;
+    if (p.blinkTimer <= 0) {
+      p.blink = 0.16;
+      p.blinkTimer = 2.4 + random() * 2.8;
+    }
+    p.blink = Math.max(0, p.blink - dt);
+    for (const particle of d.particles) {
+      particle.x += particle.vx * dt;
+      particle.y += particle.vy * dt;
+      particle.life -= dt;
+    }
+    d.particles = d.particles.filter((particle) => particle.life > 0);
+    if (d.remaining <= 0) {
+      game.mode = "won";
+      d.isBest = saveBest("neco", game.score);
+      startButton.textContent = "Play again";
+      beep(820, 0.16, "sine", 0.06);
+    }
+  }
+
+  function drawCat(pet) {
+    ctx.save();
+    ctx.translate(pet.x, pet.y + Math.sin(pet.tail * 0.7) * 1.5);
+    ctx.scale(pet.facing, 1);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = "#b9c9dd";
+    ctx.lineWidth = 13;
+    ctx.beginPath();
+    ctx.moveTo(24, 25);
+    ctx.bezierCurveTo(65, 5 + Math.sin(pet.tail) * 12, 67, -34, 42, -43 + Math.sin(pet.tail) * 6);
+    ctx.stroke();
+    ctx.fillStyle = "#dce7f4";
+    ctx.beginPath(); ctx.ellipse(0, 18, 35, 40, 0, 0, TAU); ctx.fill();
+    ctx.fillStyle = "#edf4fb";
+    ctx.beginPath(); ctx.arc(0, -20, 34, 0, TAU); ctx.fill();
+    ctx.fillStyle = "#dce7f4";
+    ctx.beginPath(); ctx.moveTo(-31, -43); ctx.lineTo(-22, -79); ctx.lineTo(-4, -50); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(31, -43); ctx.lineTo(22, -79); ctx.lineTo(4, -50); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = "#e9a7c5";
+    ctx.beginPath(); ctx.moveTo(-26, -49); ctx.lineTo(-21, -69); ctx.lineTo(-10, -51); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(26, -49); ctx.lineTo(21, -69); ctx.lineTo(10, -51); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = "#263852";
+    if (pet.blink <= 0) {
+      ctx.beginPath(); ctx.ellipse(-12, -20, 5, 8, 0, 0, TAU); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(12, -20, 5, 8, 0, 0, TAU); ctx.fill();
+      ctx.fillStyle = "#f8fbff";
+      ctx.beginPath(); ctx.arc(-10.5, -23, 1.8, 0, TAU); ctx.fill();
+      ctx.beginPath(); ctx.arc(13.5, -23, 1.8, 0, TAU); ctx.fill();
+    } else {
+      ctx.strokeStyle = "#263852"; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(-17, -20); ctx.lineTo(-8, -20); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(8, -20); ctx.lineTo(17, -20); ctx.stroke();
+    }
+    ctx.fillStyle = "#e98cae";
+    ctx.beginPath(); ctx.arc(0, -8, 5, 0, TAU); ctx.fill();
+    ctx.strokeStyle = "#8095ad"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(0, -4); ctx.lineTo(-1, 2); ctx.moveTo(-2, 2); ctx.quadraticCurveTo(-9, 7, -14, 3); ctx.moveTo(1, 2); ctx.quadraticCurveTo(8, 7, 14, 3); ctx.stroke();
+    ctx.strokeStyle = "#a8bad0"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(-21, -7); ctx.lineTo(-47, -12); ctx.moveTo(-21, 0); ctx.lineTo(-48, 3); ctx.moveTo(21, -7); ctx.lineTo(47, -12); ctx.moveTo(21, 0); ctx.lineTo(48, 3); ctx.stroke();
+    ctx.fillStyle = "#c4d4e5";
+    ctx.beginPath(); ctx.ellipse(-17, 51, 13, 7, 0, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(17, 51, 13, 7, 0, 0, TAU); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawNeco() {
+    drawBackdrop("189, 147, 249");
+    const d = game.data;
+    drawTopBar("Neco", "Affection", game.score, "Time", `${Math.ceil(d.remaining)}s`, "#bd93f9");
+    roundRect(82, 122, W - 164, H - 192, 30, "rgba(14, 31, 50, 0.58)", "rgba(255,255,255,0.1)");
+    ctx.fillStyle = "rgba(189,147,249,0.09)";
+    ctx.fillRect(82, 380, W - 164, 150);
+    ctx.fillStyle = "rgba(89,225,192,0.15)";
+    ctx.fillRect(82, 515, W - 164, 15);
+    ctx.strokeStyle = "rgba(189,147,249,0.22)"; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(170, 212, 45, 0, TAU); ctx.stroke();
+    ctx.beginPath(); ctx.arc(170, 212, 31, 0, TAU); ctx.stroke();
+    ctx.fillStyle = "#59e1c0";
+    ctx.beginPath(); ctx.arc(775, 490, 15, 0, TAU); ctx.fill();
+    ctx.fillStyle = "#4cc9f0";
+    ctx.beginPath(); ctx.arc(814, 480, 10, 0, TAU); ctx.fill();
+    ctx.strokeStyle = "#59e1c0"; ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(775, 475); ctx.lineTo(775, 428); ctx.moveTo(775, 445); ctx.lineTo(756, 426); ctx.moveTo(775, 451); ctx.lineTo(795, 430); ctx.stroke();
+    const target = game.pointer;
+    ctx.strokeStyle = "rgba(189,147,249,0.72)"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(target.x, target.y, 18 + Math.sin(d.elapsed * 4) * 3, 0, TAU); ctx.stroke();
+    ctx.fillStyle = "#bd93f9"; ctx.beginPath(); ctx.arc(target.x, target.y, 3, 0, TAU); ctx.fill();
+    for (const particle of d.particles) {
+      ctx.globalAlpha = Math.min(1, particle.life * 2);
+      ctx.fillStyle = particle.color;
+      ctx.fillRect(particle.x - 2, particle.y - 2, 4, 4);
+    }
+    ctx.globalAlpha = 1;
+    drawCat(d.pet);
+    text(d.pats ? `${d.pats} pats` : "wander your pointer to wake Neco", W / 2, 558, 13, "#7890aa", "center", 650);
+  }
+
   function drawReaction() {
     const d = game.data;
     const ready = d.phase === "ready";
@@ -513,13 +669,13 @@ import Phaser from "phaser";
 
   function drawPreview() {
     const selected = config[game.selected];
-    const tint = game.selected === "dodge" ? "255, 107, 107" : game.selected === "memory" ? "89, 225, 192" : "255, 209, 102";
+    const tint = game.selected === "dodge" ? "255, 107, 107" : game.selected === "memory" ? "89, 225, 192" : game.selected === "reaction" ? "255, 209, 102" : "189, 147, 249";
     drawBackdrop(tint);
     const best = game.highScores[game.selected];
     text(selected.title, W / 2, 188, 55, "#f8fbff", "center", 900);
-    text(game.selected === "dodge" ? "COLLECT. DODGE. SURVIVE." : game.selected === "memory" ? "SIX PAIRS. ONE SHARP MIND." : "ONE TAP. EVERY MILLISECOND COUNTS.", W / 2, 242, 14, selected.accent, "center", 900);
+    text(game.selected === "dodge" ? "COLLECT. DODGE. SURVIVE." : game.selected === "memory" ? "SIX PAIRS. ONE SHARP MIND." : game.selected === "reaction" ? "ONE TAP. EVERY MILLISECOND COUNTS." : "A LITTLE FRIEND FOR YOUR SCREEN.", W / 2, 242, 14, selected.accent, "center", 900);
 
-    const icons = game.selected === "dodge" ? ["✦", "↗", "●"] : game.selected === "memory" ? ["◇", "◆", "○"] : ["…", "⚡", "!"];
+    const icons = game.selected === "dodge" ? ["✦", "↗", "●"] : game.selected === "memory" ? ["◇", "◆", "○"] : game.selected === "reaction" ? ["…", "⚡", "!"] : ["◒", "•", "✦"];
     icons.forEach((icon, index) => {
       const x = W / 2 + (index - 1) * 118;
       roundRect(x - 45, 286, 90, 90, 24, index === 1 ? selected.accent : "rgba(255,255,255,0.055)", "rgba(255,255,255,0.09)");
@@ -556,6 +712,7 @@ import Phaser from "phaser";
     if (game.selected === "dodge") updateDodge(dt);
     if (game.selected === "memory") updateMemory(dt);
     if (game.selected === "reaction") updateReaction(dt);
+    if (game.selected === "neco") updateNeco(dt);
   }
 
   function render() {
@@ -564,6 +721,7 @@ import Phaser from "phaser";
       if (game.selected === "dodge") drawDodge();
       if (game.selected === "memory") drawMemory();
       if (game.selected === "reaction") drawReaction();
+      if (game.selected === "neco") drawNeco();
       if (game.mode === "won" || game.mode === "lost") drawOverlay();
     }
   }
@@ -584,6 +742,8 @@ import Phaser from "phaser";
       });
     } else if (game.selected === "reaction") {
       reactionAction();
+    } else if (game.selected === "neco") {
+      necoAction();
     }
   }
 
@@ -605,6 +765,7 @@ import Phaser from "phaser";
     if (key === "f") toggleFullscreen();
     if (key === "enter" && game.mode !== "playing") startSelected();
     if ((key === " " || key === "spacebar") && game.selected === "reaction" && !event.repeat) reactionAction();
+    if ((key === " " || key === "spacebar") && game.selected === "neco" && !event.repeat) necoAction();
   });
   window.addEventListener("keyup", (event) => game.keys.delete(event.key.toLowerCase()));
 
@@ -644,6 +805,10 @@ import Phaser from "phaser";
     if (game.selected === "memory") {
       const d = game.data;
       return JSON.stringify({ ...base, moves: d.moves, matchedPairs: d.matched / 2, locked: d.lockTime > 0, cards: d.cards.map((card, index) => ({ index, row: Math.floor(index / 4), column: index % 4, visible: card.flipped || card.matched, value: card.flipped || card.matched ? card.value : null, matched: card.matched })) });
+    }
+    if (game.selected === "neco") {
+      const d = game.data;
+      return JSON.stringify({ ...base, pet: { x: Math.round(d.pet.x), y: Math.round(d.pet.y), radius: d.pet.r, facing: d.pet.facing }, pointer: { x: Math.round(game.pointer.x), y: Math.round(game.pointer.y) }, affection: d.affection, pats: d.pats, timeRemaining: Number(d.remaining.toFixed(1)) });
     }
     const d = game.data;
     return JSON.stringify({ ...base, phase: d.phase, prompt: d.message, reactionMs: d.reaction });

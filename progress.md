@@ -12,6 +12,8 @@ Original prompt: connect to git and lets build some mini games so people can pla
 - Selected Phaser 4.2.1 as the production web-game engine and Vite 8.2.2 for builds. Both are pinned, MIT-licensed, and npm audit reports zero vulnerabilities for this isolated dependency tree.
 - Re-ran the Playwright smoke tests against the Vite production preview after migration: Star Sprint movement and Quick Tap success (163 ms) pass with no console errors. Production build is 364 kB gzip for the engine bundle.
 - Added a copyright-safe roadmap for Cursor Cat (Neko-style) and Desktop Lamb, plus five additional original mini-game concepts.
+- Added Neco as the fourth game: original vector cat, pointer chasing, pats, affection scoring, synthesized purr cues, and a 30-second round.
+- Verified Neco on the production preview: pointer following and pat scoring produce the expected state (`score: 50`, `pats: 1`) and the screenshot shows the complete cat/room scene with no console errors.
 
 ## TODO
 
