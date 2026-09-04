@@ -11,6 +11,7 @@ Original prompt: connect to git and lets build some mini games so people can pla
 - Verified Star Sprint star collection, scoring, life loss, and game-over flow; verified Quick Tap false-start and successful 152 ms reaction flows. Inspected gameplay and result screenshots for all three games. No browser console errors were emitted.
 - Selected Phaser 4.2.1 as the production web-game engine and Vite 8.2.2 for builds. Both are pinned, MIT-licensed, and npm audit reports zero vulnerabilities for this isolated dependency tree.
 - Re-ran the Playwright smoke tests against the Vite production preview after migration: Star Sprint movement and Quick Tap success (163 ms) pass with no console errors. Production build is 364 kB gzip for the engine bundle.
+- Added a copyright-safe roadmap for Cursor Cat (Neko-style) and Desktop Lamb, plus five additional original mini-game concepts.
 
 ## TODO
 

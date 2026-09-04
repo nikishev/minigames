@@ -1,0 +1,23 @@
+# Pocket Arcade roadmap
+
+The first three games are live. These are the next original games to add:
+
+1. **Cursor Cat** — a browser-friendly Neko-style pet that follows your
+   pointer, naps, plays, and reacts to clicks. We will draw a new cat and use
+   original animation frames rather than copying any Neko sprite sheet.
+2. **Desktop Lamb** — a tiny old-school desktop-pet game: guide a lamb around
+   a cozy field, feed it, and keep it happy. This is a new character and world,
+   inspired by the desktop-pet format rather than a port of eSheep or another
+   commercial game.
+3. **Pixel Pinball** — one-screen pinball with combo lanes and a local high
+   score.
+4. **Moon Miner** — tap rocks, chain gems, and upgrade your tiny rover.
+5. **Garden Grid** — a relaxing timed pattern puzzle.
+6. **Rhythm Tiles** — tap the glowing tiles in time with an original beat.
+7. **Orbital Golf** — sling a ball around miniature planets into the target.
+8. **Tiny Kart** — a short top-down time-trial circuit with three original
+   tracks.
+
+Every new game will use original names, art, sound, and copy. Open-source
+engines may be used under their licenses, but commercial ROMs, ripped assets,
+trademarked characters, and unlicensed music are out of scope.

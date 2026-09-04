@@ -31,3 +31,6 @@ Scores are saved locally in the browser. The site is static and can be hosted di
 This project contains only original game code and generated canvas graphics. It does not include ROMs, commercial game assets, third-party fonts, or copied audio. Phaser is used under its permissive MIT license. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for the complete content and dependency manifest.
 
 Released under the [CC0-1.0 public-domain dedication](LICENSE).
+
+See [ROADMAP.md](ROADMAP.md) for the next original games, including the
+Neko-style cat and old-school desktop lamb ideas.
