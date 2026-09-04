@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#07111f" />
+    <meta name="description" content="Pocket Arcade — three fast, free mini games for keyboard, mouse, and touch." />
+    <title>Pocket Arcade</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="Pocket Arcade home">
+          <span class="brand-mark" aria-hidden="true">✦</span>
+          <span>POCKET ARCADE</span>
+        </a>
+        <div class="status-pill"><span></span> Free to play</div>
+      </header>
+
+      <section class="hero" aria-labelledby="page-title">
+        <p class="eyebrow">Three games. Zero downloads.</p>
+        <h1 id="page-title">Tiny games, <em>big energy.</em></h1>
+        <p>Pick a challenge, chase a high score, and pass the screen to a friend.</p>
+      </section>
+
+      <nav class="game-tabs" aria-label="Choose a mini game">
+        <button class="game-tab active" type="button" data-game="dodge">
+          <span class="tab-icon coral">↗</span>
+          <span><strong>Star Sprint</strong><small>Dodge + collect</small></span>
+        </button>
+        <button class="game-tab" type="button" data-game="memory">
+          <span class="tab-icon mint">◇</span>
+          <span><strong>Flip Match</strong><small>Train your memory</small></span>
+        </button>
+        <button class="game-tab" type="button" data-game="reaction">
+          <span class="tab-icon yellow">⚡</span>
+          <span><strong>Quick Tap</strong><small>Test your reflexes</small></span>
+        </button>
+      </nav>
+
+      <section class="game-frame" aria-label="Game area">
+        <div class="canvas-wrap">
+          <canvas id="game" width="960" height="600" aria-label="Pocket Arcade game canvas"></canvas>
+        </div>
+        <div class="game-footer">
+          <div id="instructions" class="instructions">Move with WASD / arrows or drag. Collect stars and dodge meteors.</div>
+          <div class="footer-actions">
+            <button id="sound-btn" class="icon-btn" type="button" aria-label="Mute sound" title="Mute sound">♪</button>
+            <button id="fullscreen-btn" class="icon-btn" type="button" aria-label="Toggle fullscreen" title="Fullscreen (F)">⛶</button>
+            <button id="start-btn" class="primary-btn" type="button">Play Star Sprint</button>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <p>Made for quick breaks and friendly rivalries.</p>
+        <p>Tip: press <kbd>F</kbd> for fullscreen.</p>
+      </footer>
+    </main>
+    <script src="game.js"></script>
+  </body>
+</html>
