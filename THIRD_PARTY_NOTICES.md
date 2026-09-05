@@ -1,16 +1,21 @@
 # Content and rights manifest
 
-Pocket Arcade contains no ROMs, copied game code, third-party images, music,
-fonts, character art, logos, or brand assets.
+Pocket Arcade contains no ROMs, emulator content, commercial game artwork,
+copied audio, third-party fonts, or console logos. The interface uses system fonts.
 
-All game names, interface copy, canvas graphics, sound effects, and source
-code in this repository were created specifically for this project. The
-project uses standard browser APIs, system-installed fonts, and the open-source
-Phaser game framework.
+Raster art in `public/art/` was generated with OpenAI's built-in image-generation
+tool, using the user-approved concept as its reference. Source names and prompt
+specifications are recorded in `public/art/PROVENANCE.md`. The cat and sprout pet
+are original generated designs; no source images from commercial games were supplied.
 
-The mechanics are original combinations of commonplace game ideas. No names,
-visual identities, stories, characters, or assets from commercial games are
-used.
+Neco is an original browser interpretation of the classic cursor-pet idea. It
+does not currently incorporate code or sprites from winebarrel/Neco or oneko.
+Pocket Pet is the public name of the virtual-pet game; the historical
+`#tamagotchi` URL is retained for existing links. This project is not affiliated
+with Bandai or the Tamagotchi franchise.
+
+Game logic, CSS graphics, and synthesized sounds were created for this project.
+Open-source framework dependencies retain their own licenses below.
 
 The project is dedicated to the public domain under CC0-1.0. See `LICENSE`.
 
